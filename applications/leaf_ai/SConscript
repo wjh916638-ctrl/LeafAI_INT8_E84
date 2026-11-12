@@ -34,11 +34,13 @@ src += [
     os.path.join(u55_src, 'ethosu_pmu.c'),
 ]
 
+cmsis_dsp_inc = os.getenv('CMSIS_DSP_INCLUDE') or os.path.join(SDK_LIB, 'Infineon_cmsis-latest', 'COMPONENT_CMSIS_DSP', 'Include')
+
 path = [
     cwd,
     os.path.join(cwd, 'model'),
     os.path.join(cmsis_nn_root, 'Include'),
-    r'C:\Users\Charon\Documents\Codex\2026-10-12\xian\bsp\edgi_talk_1.2.1\libraries\components\Infineon_cmsis-latest\COMPONENT_CMSIS_DSP\Include',
+    cmsis_dsp_inc,
     os.path.join(ml_middleware, 'include'),
     os.path.join(ml_middleware, 'source', 'COMPONENT_ML_EXECUTORCH'),
     os.path.join(ml_executorch, 'include'),

@@ -1,4 +1,28 @@
 import os
+import glob
+import re
+
+
+def _version_key(path):
+    name = os.path.basename(os.path.dirname(path))
+    nums = re.findall(r'\d+', name)
+    return tuple(int(n) for n in nums) if nums else (0,)
+
+
+
+def _find_gcc_toolchain():
+    # Auto-detect arm-none-eabi toolchain; RTT_EXEC_PATH wins.
+    env = os.getenv('RTT_EXEC_PATH')
+    if env and os.path.isfile(os.path.join(env, 'arm-none-eabi-gcc.exe')):
+        return env
+    for base in (r'D:\RT-ThreadStudio', r'C:\RT-ThreadStudio'):
+        pat = os.path.join(base, 'repo', 'Extract', 'ToolChain_Support_Packages',
+                           'ARM', 'GNU_Tools_for_ARM_Embedded_Processors', '*', 'bin')
+        for cand in sorted(glob.glob(pat), key=_version_key, reverse=True):
+            if os.path.isfile(os.path.join(cand, 'arm-none-eabi-gcc.exe')):
+                return cand
+    return ''
+
 
 # toolchains options
 ARCH='arm'
@@ -17,7 +41,7 @@ if os.getenv('RTT_ROOT'):
 # EXEC_PATH is the compiler execute path, for example, CodeSourcery, Keil MDK, IAR
 if  CROSS_TOOL == 'gcc':
     PLATFORM    = 'gcc'
-    EXEC_PATH   = r'D:\RT-ThreadStudio\repo\Extract\ToolChain_Support_Packages\ARM\GNU_Tools_for_ARM_Embedded_Processors\13.3\bin'
+    EXEC_PATH   = _find_gcc_toolchain()
 elif CROSS_TOOL == 'keil':
     PLATFORM    = 'armclang'
     EXEC_PATH   = r'C:/Keil_v5'

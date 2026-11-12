@@ -4,8 +4,32 @@ import rtconfig
 import platform
 import subprocess
 import uuid
+import glob
+import re
 
-SDK_BSP_ROOT = r'D:\RT-ThreadStudio\repo\Local\Board_Support_Packages\Infineon\PSOC_E84-EDGI-TALK\1.4.0'
+
+def _version_key(path):
+    name = os.path.basename(os.path.dirname(path))
+    nums = re.findall(r'\d+', name)
+    return tuple(int(n) for n in nums) if nums else (0,)
+
+
+
+def _find_sdk_bsp_root():
+    # Auto-detect PSOC_E84-EDGI-TALK BSP; LEAF_BSP_ROOT wins.
+    env = os.getenv('LEAF_BSP_ROOT')
+    if env and os.path.isdir(os.path.join(env, 'rt-thread')):
+        return env
+    for base in (r'D:\RT-ThreadStudio', r'C:\RT-ThreadStudio'):
+        pat = os.path.join(base, 'repo', '*', 'Board_Support_Packages',
+                           'Infineon', 'PSOC_E84-EDGI-TALK', '*')
+        for cand in sorted(glob.glob(pat), key=_version_key, reverse=True):
+            if os.path.isdir(os.path.join(cand, 'rt-thread')):
+                return cand
+    return ''
+
+
+SDK_BSP_ROOT = _find_sdk_bsp_root()
 RTT_ROOT = os.path.join(SDK_BSP_ROOT, 'rt-thread')
 
 sys.path = sys.path + [os.path.join(RTT_ROOT, 'tools')]
