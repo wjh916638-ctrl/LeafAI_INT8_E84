@@ -1,0 +1,37 @@
+# ===== 构建产物 =====
+Debug/
+build/
+*.o
+*.d
+*.pyc
+*.dblite
+.sconsign.dblite
+rtconfig.pyc
+*.old
+
+# ===== 由 mklinks.bat 生成的目录联接（指向本机 BSP，不能提交）=====
+/rt-thread/
+/libraries/
+/libs/
+/tools/
+
+# ===== 本机临时/备份文件 =====
+leaf_repro/
+leaf_repro.zip
+leafai_pathfix_backup*/
+*.log
+
+# ===== IDE 缓存 =====
+.settings/.rtmenus
+.vscode/
+.metadata/
+
+# ===== 保留交付固件 =====
+!prebuilt/
+!prebuilt/rtthread.hex
+!prebuilt/rtthread.elf
+!prebuilt/rtthread.map
+
+# ===== 保留链接脚本需要的算子对象（link.ld 的 INPUT 依赖它们）=====
+!middleware/ml-executorch/COMPONENT_ML_EXECUTORCH/COMPONENT_U55/TOOLCHAIN_GCC_ARM/libs/linkobj/
+!middleware/ml-executorch/COMPONENT_ML_EXECUTORCH/COMPONENT_U55/TOOLCHAIN_GCC_ARM/libs/linkobj/*

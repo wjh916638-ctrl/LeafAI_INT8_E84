@@ -1,0 +1,110 @@
+from building import *
+import os
+
+Import('SDK_LIB')
+
+cwd = GetCurrentDir()
+project_root = os.path.abspath(os.path.join(cwd, '..', '..'))
+middleware = os.path.join(project_root, 'middleware')
+ml_middleware = os.path.join(middleware, 'ml-middleware')
+ml_executorch = os.path.join(middleware, 'ml-executorch')
+pdl = os.path.join(SDK_LIB, 'mtb-device-support-pse8xxgp', 'pdl')
+u55 = os.path.join(pdl, 'drivers', 'third_party', 'COMPONENT_U55')
+u55_src = os.path.join(cwd, 'u55_driver')
+cmsis_nn_root = os.path.join(
+    cwd,
+    'cmsis_nn_v7',
+)
+
+src = Glob('*.c')
+src += Glob('*.cpp')
+src += Glob('model/*.c')
+# ExecuTorch's bundled CMSIS-NN archive is built with M-profile vector
+# extensions. This RT-Thread image is compiled for Cortex-M7 and runs without
+# MVE, so build the CMSIS-NN sources with the project's current CPU target.
+src += Glob(os.path.join(cmsis_nn_root, 'Source', '*', '*.c'))
+src += Glob(os.path.join(cwd, 'executorch_runtime', '*.cpp'))
+src += [
+    os.path.join(ml_middleware, 'source', 'mtb_ml.c'),
+    os.path.join(ml_middleware, 'source', 'mtb_ml_utils.c'),
+    os.path.join(ml_middleware, 'source', 'COMPONENT_U55', 'mtb_ml_ethosu.c'),
+    os.path.join(u55_src, 'ethosu_driver.c'),
+    os.path.join(u55_src, 'ethosu_device_u55_u65.c'),
+    os.path.join(u55_src, 'ethosu_device_u85.c'),
+    os.path.join(u55_src, 'ethosu_pmu.c'),
+]
+
+path = [
+    cwd,
+    os.path.join(cwd, 'model'),
+    os.path.join(cmsis_nn_root, 'Include'),
+    r'C:\Users\Charon\Documents\Codex\2026-10-12\xian\bsp\edgi_talk_1.2.1\libraries\components\Infineon_cmsis-latest\COMPONENT_CMSIS_DSP\Include',
+    os.path.join(ml_middleware, 'include'),
+    os.path.join(ml_middleware, 'source', 'COMPONENT_ML_EXECUTORCH'),
+    os.path.join(ml_executorch, 'include'),
+    os.path.join(
+        ml_executorch, 'include', 'executorch', 'runtime',
+        'core', 'portable_type', 'c10',
+    ),
+    os.path.join(u55, 'include'),
+    os.path.join(u55, 'src'),
+]
+
+defines = [
+    'COMPONENT_ML_EXECUTORCH',
+    'COMPONENT_U55',
+    'ETHOSU',
+    'ETHOSU55',
+    'ETHOSU_ARCH=u55',
+    'C10_USING_CUSTOM_GENERATED_MACROS',
+    'ET_DEBUG_BUFFER_SIZE=0x1000',
+    'ET_MIN_LOG_LEVEL=Error',
+    'COMPONENT_GCC_ARM',
+    'COMPONENT_CM55',
+    'COMPONENT_HARDFP',
+    'MTB_ML_ETHOSU_SECURITY_ENABLE=0',
+    'MTB_ML_ETHOSU_PRIVILEGE_ENABLE=1',
+]
+
+executorch_lib_dir = os.path.join(
+    ml_executorch,
+    'COMPONENT_ML_EXECUTORCH',
+    'COMPONENT_U55',
+    'TOOLCHAIN_GCC_ARM',
+    'libs',
+)
+
+group = DefineGroup(
+    'leaf_ai',
+    src,
+    depend=[''],
+    CPPPATH=path,
+    CPPDEFINES=defines,
+    LOCAL_CFLAGS=' -O3',
+    LOCAL_CXXFLAGS=' -std=c++17 -O3',
+)
+
+link_group = DefineGroup(
+    'leaf_ai_executorch',
+    [],
+    depend=[''],
+    LIBPATH=[executorch_lib_dir],
+    LIBS=[
+        'executorch_core',
+        'executorch_delegate_ethos_u',
+        'cortex_m_kernels',
+        'portable_ops_lib',
+        'portable_kernels',
+        'cmsis-nn',
+        'extension_runner_util',
+    ],
+    LINKFLAGS=(
+        ' -Wl,--whole-archive '
+        + os.path.join(executorch_lib_dir, 'libcortex_m_ops_lib.a')
+        + ' '
+        + os.path.join(executorch_lib_dir, 'libexecutorch.a')
+        + ' -Wl,--no-whole-archive -Wl,--wrap=vsnprintf'
+    ),
+)
+
+Return('group')

@@ -1,0 +1,49 @@
+{
+  "file": "mobilenetv2_apple.pt2",
+  "format": "PyTorch ExportedProgram (.pt2)",
+  "input_shape_nchw": [
+    1,
+    3,
+    160,
+    160
+  ],
+  "input_dtype": "float32",
+  "input_color": "RGB",
+  "required_preprocessing": {
+    "resize": [
+      160,
+      160
+    ],
+    "convert_to_float_range": "[0, 1]",
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ]
+  },
+  "output": {
+    "shape": [
+      1,
+      4
+    ],
+    "meaning": "logits; apply softmax to get probabilities",
+    "class_order": [
+      "healthy",
+      "multiple_diseases",
+      "rust",
+      "scab"
+    ],
+    "class_names_zh": [
+      "健康",
+      "多种病害",
+      "锈病",
+      "黑星病"
+    ]
+  },
+  "warning": "Model converter/operator compatibility and target-board RAM must be validated before deployment."
+}

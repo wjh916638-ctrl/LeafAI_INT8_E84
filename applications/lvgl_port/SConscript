@@ -1,0 +1,26 @@
+import os
+from building import *
+
+Import('SDK_LIB')
+
+cwd = GetCurrentDir()
+project_root = os.path.abspath(os.path.join(cwd, '..', '..'))
+lvgl_root = os.path.join(SDK_LIB, 'lvgl_9.2.0')
+libraries_root = os.path.dirname(SDK_LIB)
+
+path = [
+    cwd,
+    lvgl_root,
+    os.path.join(lvgl_root, 'src'),
+    os.path.join(libraries_root, 'Common', 'board', 'ports', 'lvgl'),
+]
+
+group = DefineGroup(
+    'leaf_lvgl_port',
+    ['lv_rt_thread_port.c'],
+    depend=['BSP_USING_LVGL'],
+    CPPPATH=path,
+    CPPDEFINES=['__RTTHREAD__'],
+)
+
+Return('group')
